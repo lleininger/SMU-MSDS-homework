@@ -1,0 +1,72 @@
+---
+title: "LLeininger_LiveAssignment5"
+author: "Lisa Leininger"
+date: "9/26/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+##1) Data Munging
+```{r}
+# Download table and give human-readable column names
+df <- read.table("yob2016.txt", sep = ";", col.names = c("Name", "Gender", "Amount"))
+
+# Display summary and structure of df
+str(df)
+summary(df)
+
+# Find name that is misspelled
+grep("yyy", df$Name)
+df$Name[212]
+
+# Delete misspelled name & save as y2016
+y2016 <- df[-c(212),]
+
+```
+
+##2) Data Merging
+```{r}
+# Import.txt file into R, give human-readable names, assign to y2015
+y2015 <- read.table("yob2015.txt", sep = ",", col.names = c("Name", "Gender", "Amount"))
+
+#Display the last ten rows in the dataframe
+tail(y2015, 10)
+
+# There are a few things that are interesting. One is that when the name has the same amount of times used, the names get alphabetized. So "Z" names end up much lower on the list than "A" names, even if they are used the same amount of times. The second interesting thing I just realized is that there are male names included on this list. All the female names must occur first since "F" is alphabetically before "M". I had only looked at the top of the data frame until this point and so I did not realize the list even included male names.
+
+# Adding y2016
+df <- read.table("yob2016.txt", sep = ";", col.names = c("Name", "Gender", "Amount"))
+grep("yyy", df$Name)
+df$Name[212]
+y2016 <- df[-c(212),]
+
+# Merge y2016 and y2015 by name column & delete any NAs
+final <- merge.data.frame(y2015,y2016,by=c("Name", "Gender"))
+
+```
+
+##3) Data Summary
+```{r}
+#Create a new column called Total
+final <- within(final, Amount.x + Amount.y )
+final$Total <- c(final$`Amount.x`+final$`Amount.y`)
+
+#Sort the data by total
+final <- final[order(-final$Total),]
+
+# Omit boys & give the top 10 most popular girl's names
+FinalList <- subset(final[order(-final$Total),], final$Gender == "F")
+FinalList <- head(FinalList, 10)
+
+# Delete extra columns
+FinalList <- FinalList[-c(2:4)]
+FinalList
+
+#Write to a csv file
+write.csv(FinalList, row.names = FALSE, quote=FALSE)
+```
+
+##4) Upload to GitHub
+
